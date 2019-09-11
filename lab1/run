@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+# run ping module
+ansible -m ping -i ./hosts ubuntu-it-infra > out
+
+# run shell module and make it execute 'ps -A'
+ansible -m shell -a 'ps -A' -i ./hosts ubuntu-it-infra >> out
