@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+# run ansible-playbook on playbook.yaml
+ansible-playbook init.yaml -i hosts --ask-pass --ask-become-pass > out
