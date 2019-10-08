@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+ansible-playbook init.yaml --ask-pass --ask-become-pass > out
+ansible-playbook webserver.yaml >> out

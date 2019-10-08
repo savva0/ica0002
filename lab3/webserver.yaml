@@ -1,0 +1,69 @@
+---
+- name: Setup webserver
+  hosts: ubuntu-it-infra
+  remote_user: savva
+  tasks:
+  - name: Run ping
+    ping:
+
+  - name: Wait for any possibly running unattended upgrade to finish
+    become: yes
+    raw: systemd-run --property="After=apt-daily.service apt-daily-upgrade.service" --wait /bin/true
+
+  - name: Install Apache httpd
+    become: yes
+    apt: name=apache2 update_cache=yes state=latest
+
+  - name: Install php 7.2
+    become: yes
+    apt: name=php7.2 update_cache=yes state=latest
+
+  - name: Enable php module in Apache2
+    become: yes
+    command: a2enmod php7.2
+    notify:
+      - restart apache2
+
+  - name: Check if Apache has line "Listen 8080"
+    command: grep "^Listen 8080" /etc/apache2/ports.conf 
+    ignore_errors: yes
+    register: check_ports
+
+  - name: Make apache2 listen on port 8080
+    become: yes
+    lineinfile:
+      dest: /etc/apache2/ports.conf
+      line: Listen 8080
+    when: check_ports.stdout == ""
+    notify:
+      - restart apache2
+
+  - name: Copy index.php
+    become: yes
+    copy:
+      mode: 0444
+      src: index.php
+      dest: /var/www/php/
+
+  - name: Add new site config
+    become: yes
+    copy:
+      mode: 0440
+      src: 001-php_info.conf
+      dest: /etc/apache2/sites-available/
+    notify:
+      - restart apache2
+
+  - name: Enable php site in Apache2
+    become: yes
+    command: a2ensite 001-php_info.conf
+    notify:
+      - restart apache2
+
+  handlers:
+  - name: restart apache2
+    become: yes
+    systemd:
+      name: apache2
+      state: restarted
+
