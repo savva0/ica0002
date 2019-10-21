@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+ansible-playbook wordpress.yaml --ask-vault-pass --ask-pass --ask-become-pass > out
