@@ -41,11 +41,16 @@
       update_cache: yes
       state: latest
 
-  - name: Install python3-pymysql module
+  - name: Install python3-pip package
     apt:
-      name: python3-pymysql
+      name: python3-pip
       update_cache: yes
       state: latest
+
+  - name: Make sure pymysql is present
+    pip:
+      name: pymysql
+      state: present
 
   - name: Create a database for wordpress
     mysql_db:
