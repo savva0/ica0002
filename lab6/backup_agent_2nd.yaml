@@ -1,0 +1,86 @@
+- name: Init
+  hosts: db1
+  remote_user: savva
+  become: yes
+  tasks:
+  - include_vars: vars.yaml
+  - name: Run ping
+    ping:
+
+  - name: Update known_hosts
+    known_hosts:
+      path: /srv/backup/.ssh/known_hosts
+      name: '{{ hostvars.backup_server1.ansible_host }}'
+      key: "{{ hostvars.backup_server1.ansible_host + ' ' + lookup('file', 'var/backup_server1/etc/ssh/ssh_host_ecdsa_key.pub').split(' ')[0] + ' ' + lookup('file', 'var/backup_server1/etc/ssh/ssh_host_ecdsa_key.pub').split(' ')[1] }}"
+      state: present
+
+  - name: Change known_hosts owner
+    file:
+      path: /srv/backup/.ssh/known_hosts
+      mode: '0440'
+      owner: backup
+      group: backup
+
+  - name: Install duplicity
+    apt:
+      name: duplicity
+      update_cache: yes
+      state: latest
+
+  - name: Install python3-pymysql module
+    apt:
+      name: python3-pymysql
+      update_cache: yes
+      state: latest
+
+  - name: Create a user for wordpress
+    mysql_user:
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      name: backup
+      host: '%'
+      priv: '{{ wp_db_name }}.*:SELECT,GRANT'
+      state: present
+
+  - name: Create mariadb backup directory
+    file:
+      path: /srv/backup/mariadb
+      mode: '0700'
+      state: directory
+      owner: backup
+      group: backup
+
+  - name: Copy full backup script
+    template:
+      src: templates/mariadb-full.sh.j2
+      dest: /srv/backup/mariadb-full.sh
+      mode: '0700'
+      owner: backup
+      group: backup
+
+  - name: Configure cron for full backup
+    cron:
+      name: mariadb full
+      weekday: "0"
+      hour: "23"
+      minute: "0"
+      user: backup
+      job: "/srv/backup/mariadb-full.sh"
+      cron_file: ansible_mariadb-full
+
+  - name: Copy incremental backup script
+    template:
+      src: templates/mariadb-incr.sh.j2
+      dest: /srv/backup/mariadb-incr.sh
+      mode: '0700'
+      owner: backup
+      group: backup
+  
+  - name: Configure cron for incremental backup
+    cron:
+      name: mariadb incr
+      weekday: "1-6"
+      hour: "23"
+      minute: '*'
+      user: backup
+      job: "/srv/backup/mariadb-incr.sh"
+      cron_file: ansible_mariadb-incr

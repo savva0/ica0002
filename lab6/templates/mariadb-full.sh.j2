@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+mysqldump {{ wp_db_name }} --single-transaction=TRUE > /srv/backup/mariadb/{{ wp_db_name }}.sql
+
+duplicity --no-encryption full /srv/backup/mariadb rsync://192.168.122.133//srv/backup/db1/mariadb

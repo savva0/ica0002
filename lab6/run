@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+ansible-playbook init.yaml --ask-become-pass > out
+
+ansible-playbook wordpress.yaml >> out
+
+ansible-playbook dns.yaml >> out
+
+ansible-playbook backup_agent.yaml >> out
+
+ansible-playbook backup_server.yaml >> out
+
+ansible-playbook backup_agent_2nd.yaml >> out

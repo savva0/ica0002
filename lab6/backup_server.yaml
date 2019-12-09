@@ -1,0 +1,60 @@
+- name: Init
+  hosts: backup_server1
+  remote_user: savva
+  become: yes
+  tasks:
+  - name: Run ping
+    ping:
+
+  - name: Create backup user
+    user:
+      name: backup
+      create_home: yes
+      home: /srv/backup
+      password: '!'
+      system: yes
+      state: present
+      shell: /bin/bash
+
+  - name: Create .ssh
+    file:
+      path: /srv/backup/.ssh
+      mode: '0700'
+      state: directory
+      owner: backup
+      group: backup
+
+  - name: Install backup_agent's public key
+    copy:
+      src: ./var/db1/srv/backup/.ssh/id_ed25519.pub
+      mode: '0440'
+      owner: 'backup'
+      group: 'backup'
+      dest: /srv/backup/.ssh/authorized_keys
+
+  - name: Fetch server public key
+    fetch:
+      src: /etc/ssh/ssh_host_ecdsa_key.pub
+      dest: ./var
+
+  - name: Update sudoers
+    become: yes
+    copy:
+      mode: '0440'
+      dest: /etc/sudoers.d/backup-sudoers
+      content: 'backup ALL=(ALL) NOPASSWD:ALL'
+      validate: 'visudo -cf %s'
+
+  - name: Create target directory for db1 agent
+    file:
+      path: /srv/backup/db1/mariadb
+      mode: '0700'
+      state: directory
+      owner: backup
+      group: 
+
+  - name: Install duplicity
+    apt:
+      name: duplicity
+      update_cache: yes
+      state: latest

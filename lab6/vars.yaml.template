@@ -1,0 +1,7 @@
+---
+wp_db_name: # DB name
+wp_db_user: # DB username
+wp_db_user_pass: # DB password for user
+wp_db_host: localhost # DB host
+wp_db_prefix: wp_ # DB table prefix, wp_ is the default
+wp_ver: 5.2.4 # WordPress version to download from https://github.com/WordPress/WordPress/releases

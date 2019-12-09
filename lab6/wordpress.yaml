@@ -1,0 +1,154 @@
+---
+- name: Setup MariaDB SQL DBMS
+  hosts: db1
+  remote_user: savva
+  become: yes
+  tasks:
+  - include_vars: vars.yaml
+  - name: Wait for any possibly running unattended upgrade to finish
+    raw: systemd-run --property="After=apt-daily.service apt-daily-upgrade.service" --wait /bin/true
+
+  - name: Install MariaDB
+    apt:
+      name: mariadb-server-10.1
+      update_cache: yes
+      state: latest
+
+  - name: Install python3-pip package
+    apt:
+      name: python3-pip
+      update_cache: yes
+      state: latest
+
+  - name: Make sure pymysql is present
+    pip:
+      name: pymysql
+      state: present
+
+  - name: Create a database for wordpress
+    mysql_db:
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      name: '{{ wp_db_name }}'
+      state: present
+
+  - name: Create a user for wordpress
+    mysql_user:
+      login_unix_socket: /var/run/mysqld/mysqld.sock
+      name: '{{ wp_db_user }}'
+      host: '%'
+      priv: '{{ wp_db_name }}.*:ALL,GRANT'
+      state: present
+      password: '{{ wp_db_user_pass }}'
+
+- name: Setup Apache2 webserver
+  hosts: web1
+  remote_user: savva
+  tasks:
+  - include_vars: vars.yaml
+  - name: Wait for any possibly running unattended upgrade to finish
+    become: yes
+    raw: systemd-run --property="After=apt-daily.service apt-daily-upgrade.service" --wait /bin/true
+
+  - name: Install Apache httpd
+    become: yes
+    apt:
+      name: apache2
+      update_cache: yes
+      state: latest
+
+  - name: Install php 7.2
+    become: yes
+    apt:
+      name: php7.2
+      update_cache: yes
+      state: latest
+
+  - name: Install php mysql module
+    become: yes
+    apt: 
+      name: php7.2-mysql
+      update_cache: yes
+      state: latest
+
+  - name: Install php fastcgi Apache module
+    become: yes
+    apt: 
+      name: php7.2-fpm
+      update_cache: yes
+      state: latest
+
+  - name: Disable default php module in Apache2
+    become: yes
+    command: a2dismod php7.2
+    notify:
+      - restart apache2
+
+  - name: Enable proxy_fcgi Apache2 module
+    become: yes
+    command: a2enmod proxy_fcgi
+    notify:
+      - restart apache2
+
+  - name: Enable setenvif Apache2 module
+    become: yes
+    command: a2enmod setenvif
+    notify:
+      - restart apache2
+
+  - name: Enable php7.2-fpm Apache2 config
+    become: yes
+    command: a2enconf php7.2-fpm
+    notify:
+      - restart apache2
+
+  - name: Get latest version of WordPress
+    become: yes
+    git:
+      repo: https://github.com/WordPress/WordPress.git
+      version: '{{ wp_ver }}'
+      dest: /var/www/php/
+      update: no
+ 
+  - name: Get Authentication Unique Keys and Salts
+    uri:
+      url: 'https://api.wordpress.org/secret-key/1.1/salt/'
+      return_content: True
+      method: GET
+    register: api_info
+
+  - name: Install wp-config.php file
+    become: yes
+    template:
+      src: wp-config.php
+      dest: /var/www/php/wp-config.php
+      owner: root
+      group: root
+      mode: '0644'
+
+  - name: Add new site config
+    become: yes
+    copy:
+      mode: '0440'
+      src: 001-wordpress.conf
+      dest: /etc/apache2/sites-available/
+    notify:
+      - restart apache2
+
+  - name: Enable php site in Apache2
+    become: yes
+    command: a2ensite 001-wordpress.conf
+    notify:
+      - restart apache2
+
+  - name: Disable default site config
+    become: yes
+    command: a2dissite 000-default.conf
+    notify:
+      - restart apache2
+
+  handlers:
+  - name: restart apache2
+    become: yes
+    systemd:
+      name: apache2
+      state: restarted

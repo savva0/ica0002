@@ -1,0 +1,41 @@
+zone "foo.bar" {
+{% if dns_role == "master" %}
+  type master;
+  
+  file "/etc/bind/db.foo";
+
+  allow-transfer { 192.168.122.133; };
+
+  notify yes;
+{% else %}
+  type slave;
+  
+  file "/var/lib/bind/db.foo";
+
+  allow-transfer { none; };
+
+  masters {
+    {{ master_ip }};
+  };
+{% endif %}
+};
+
+zone "122.168.192.in-addr.arpa" {
+{% if dns_role == "master" %}
+  type master;
+
+  file "/etc/bind/db.foo.ptr";
+
+  allow-transfer { 192.168.122.133; };
+{% else %}
+  type slave;
+
+  file "/var/lib/bind/db.foo.ptr";
+
+  allow-transfer { none; };
+
+  masters {
+    {{ master_ip }};
+  };
+{% endif %}
+};

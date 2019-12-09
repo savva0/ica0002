@@ -1,0 +1,33 @@
+- name: Init
+  hosts: db1
+  remote_user: savva
+  become: yes
+  tasks:
+  - include_vars: vars.yaml
+  - name: Run ping
+    ping:
+
+  - name: Create backup user
+    user:
+      name: backup
+      create_home: yes
+      home: /srv/backup
+      generate_ssh_key: yes
+      ssh_key_type: 'ed25519'
+      password: '!'
+      system: yes
+      shell: /bin/bash
+      state: present
+
+  - name: Get backup user's public key
+    fetch:
+      src: /srv/backup/.ssh/id_ed25519.pub
+      dest: ./var
+
+  - name: Update sudoers
+    become: yes
+    copy:
+      mode: '0440'
+      dest: /etc/sudoers.d/backup-sudoers
+      content: 'backup ALL=(ALL) NOPASSWD:ALL'
+      validate: 'visudo -cf %s'
