@@ -52,11 +52,11 @@ foo_records:
     type: CNAME
     value: web1.foo.bar.
 
-  - name: grafana.foo.bar.
+  - name: grafana1.foo.bar.
     type: CNAME
     value: infra01.foo.bar.
 
-  - name: prometheus.foo.bar.
+  - name: prometheus1.foo.bar.
     type: CNAME
     value: infra01.foo.bar.
 

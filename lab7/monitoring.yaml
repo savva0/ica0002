@@ -16,7 +16,7 @@
     - resolv
 
 - name: Install prometheus
-  hosts: prometheus
+  hosts: prometheus1
   remote_user: savva
   become: yes
   roles:
@@ -37,7 +37,7 @@
     - wordpress
 
 - name: Install Grafana
-  hosts: grafana
+  hosts: grafana1
   remote_user: savva
   become: yes
   roles:
