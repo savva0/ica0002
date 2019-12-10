@@ -1,0 +1,18 @@
+[Unit]
+Description=Prometheus
+Documentation=https://github.com/prometheus/prometheus
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=prometheus
+Group=prometheus
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/prometheus-{{ pm_ver }}.linux-amd64/prometheus --config.file=/usr/local/prometheus-{{ pm_ver }}.linux-amd64/prometheus.yaml --storage.tsdb.path="/var/prometheus/data/"
+
+SyslogIdentifier=prometheus
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

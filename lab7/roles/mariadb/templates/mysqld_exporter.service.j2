@@ -1,0 +1,20 @@
+[Unit]
+Description=MySQLd exporter
+Documentation=https://github.com/prometheus/mysqld_exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Environment=DATA_SOURCE_NAME='mysqld_exporter@unix(/var/run/mysqld/mysqld.sock)/'
+
+Type=simple
+User=mysqld_exporter
+Group=mysqld_exporter
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/bin/mysqld_exporter
+
+SyslogIdentifier=mysqld_exporter
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,30 @@
+- name: Install apt-transport-https
+  apt:
+    name: apt-transport-https
+
+#    https://packages.grafana.com/gpg.key
+
+- name: Add Grafana apt key
+  apt_key:
+    id: 8C8C34C524098CB6
+    url: https://packages.grafana.com/gpg.key
+    keyring: /etc/apt/trusted.gpg.d/grafana.gpg
+
+
+- name: Add Grafana repository
+  apt_repository:
+    repo: 'deb https://packages.grafana.com/oss/deb stable main'
+    state: present
+    filename: grafana
+
+- name: Install Grafana
+  apt:
+    name: grafana
+    update_cache: yes
+    state: latest
+
+- name: Start and enable Grafana
+  service:
+    name: grafana-server
+    state: started
+    enabled: yes

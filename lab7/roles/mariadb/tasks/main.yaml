@@ -1,0 +1,101 @@
+- name: Wait for any possibly running unattended upgrade to finish
+  raw: systemd-run --property="After=apt-daily.service apt-daily-upgrade.service" --wait /bin/true
+
+- name: Install MariaDB
+  apt:
+    name: mariadb-server-10.1
+    update_cache: yes
+    state: latest
+
+- name: Install python3-pip package
+  apt:
+    name: python3-pip
+    update_cache: yes
+    state: latest
+
+- name: Make sure pymysql is present
+  pip:
+    name: pymysql
+    state: present
+
+- name: Create a database for wordpress
+  mysql_db:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: '{{ wp_db_name }}'
+    state: present
+
+- name: Create a user for wordpress
+  mysql_user:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: '{{ wp_db_user }}'
+    host: '{{ wp_user_host }}'
+    priv: '{{ wp_db_name }}.*:ALL,GRANT'
+    state: present
+    password: '{{ wp_db_user_pass }}'
+
+- name: Create a user for mysqld_exporter
+  mysql_user:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: mysqld_exporter
+    host: 'localhost'
+    priv: '*.*:PROCESS,REPLICATION CLIENT'
+    state: present
+  register: mysqld_exporter_created
+
+- name: Limit mysqld_exporter to MAX_USER_CONNECTIONS 3
+  shell: mysql -e "update mysql.user set MAX_USER_CONNECTIONS=3 where user='mysqld_exporter' and host='localhost'";
+  when: mysqld_exporter_created.changed
+
+- name: Change MariaDB port
+  lineinfile:
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    state: present
+    regexp: '^bind-address'
+    line: 'bind-address = 0.0.0.0'
+  notify:
+    - Reload MariaDB configuration
+
+- name: Fetch mysqld_exporter
+  get_url:
+    url: https://github.com/prometheus/mysqld_exporter/releases/download/v{{ me_ver }}/mysqld_exporter-{{ me_ver }}.linux-amd64.tar.gz
+    dest: /opt/mysqld_exporter-{{ me_ver }}.linux-amd64.tar.gz
+
+- name: Extract mysqld_exporter
+  unarchive:
+    src: /opt/mysqld_exporter-{{ me_ver }}.linux-amd64.tar.gz
+    dest: /opt/
+    remote_src: yes
+
+- name: Install mysqld_exporter
+  copy:
+    src: /opt/mysqld_exporter-{{ me_ver }}.linux-amd64/mysqld_exporter
+    dest: /usr/local/bin/mysqld_exporter
+    mode: '0755'
+    remote_src: yes
+
+- name: Create unprivileged mysqld_exporter user
+  user:
+      name: mysqld_exporter
+      create_home: no
+      password: "*"
+      shell: /usr/sbin/nologin
+      system: yes
+      state: present
+
+- name: Install mysqld_exporter systemd service
+  template:
+    src: mysqld_exporter.service.j2
+    dest: /etc/systemd/system/mysqld_exporter.service
+
+- name: Start mysqld_exporter
+  service:
+    name: mysqld_exporter
+    daemon_reload: yes
+    state: started
+    enabled: yes
+
+- name: Restart mysqld_exporter
+  systemd:
+    name: mysqld_exporter
+    state: restarted
+    enabled: yes

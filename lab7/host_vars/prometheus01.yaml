@@ -1,0 +1,30 @@
+---
+pm_ver: "2.13.1"
+jobs:
+  - name: prometheus
+    port: 9090
+    targets:
+      - localhost
+  - name: ping
+    port: 10000
+    targets:
+      - infra01.foo.bar
+      - infra02.foo.bar
+  - name: node
+    port: 9100
+    targets:
+      - infra01.foo.bar
+      - infra02.foo.bar
+  - name: bind
+    port: 9119
+    targets:
+      - ns1.foo.bar
+      - ns2.foo.bar
+  - name: apache
+    port: 9117
+    targets:
+      - web1.foo.bar
+  - name: mysql_exporter
+    port: 9104
+    targets:
+      - db1.foo.bar

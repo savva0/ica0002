@@ -1,0 +1,133 @@
+- name: Wait for any possibly running unattended upgrade to finish
+  raw: systemd-run --property="After=apt-daily.service apt-daily-upgrade.service" --wait /bin/true
+
+- name: Install Apache httpd
+  apt:
+    name: apache2
+    update_cache: yes
+    state: latest
+
+- name: Install php 7.2
+  apt:
+    name: php7.2
+    update_cache: yes
+    state: latest
+
+- name: Install php mysql module
+  apt: 
+    name: php7.2-mysql
+    update_cache: yes
+    state: latest
+
+- name: Install php fastcgi Apache module
+  apt: 
+    name: php7.2-fpm
+    update_cache: yes
+    state: latest
+
+- name: Disable default php module in Apache2
+  command: a2dismod php7.2
+  notify:
+    - restart apache2
+
+- name: Enable proxy_fcgi Apache2 module
+  command: a2enmod proxy_fcgi
+  notify:
+    - restart apache2
+
+- name: Enable setenvif Apache2 module
+  command: a2enmod setenvif
+  notify:
+    - restart apache2
+
+- name: Enable php7.2-fpm Apache2 config
+  command: a2enconf php7.2-fpm
+  notify:
+    - restart apache2
+
+- name: Get latest version of WordPress
+  git:
+    repo: https://github.com/WordPress/WordPress.git
+    version: '{{ wp_ver }}'
+    dest: /var/www/php/
+    update: no
+
+- name: Get Authentication Unique Keys and Salts
+  uri:
+    url: 'https://api.wordpress.org/secret-key/1.1/salt/'
+    return_content: True
+    method: GET
+  register: api_info
+
+- name: Install wp-config.php file
+  template:
+    src: wp-config.php
+    dest: /var/www/php/wp-config.php
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Add new site config
+  copy:
+    mode: '0440'
+    src: 001-wordpress.conf
+    dest: /etc/apache2/sites-available/
+  notify:
+    - restart apache2
+
+- name: Enable php site in Apache2
+  command: a2ensite 001-wordpress.conf
+  notify:
+    - restart apache2
+
+- name: Disable default site config
+  command: a2dissite 000-default.conf
+  notify:
+    - restart apache2
+
+#https://github.com/Lusitaniae/apache_exporter/releases/download/v0.7.0/apache_exporter-0.7.0.linux-amd64.tar.gz
+
+- name: Fetch apache_exporter
+  get_url:
+    url: https://github.com/Lusitaniae/apache_exporter/releases/download/v{{ ae_ver }}/apache_exporter-{{ ae_ver }}.linux-amd64.tar.gz
+    dest: /opt/apache_exporter-{{ ae_ver }}.linux-amd64.tar.gz
+
+- name: Extract apache_exporter
+  unarchive:
+    src: /opt/apache_exporter-{{ ae_ver }}.linux-amd64.tar.gz
+    dest: /opt/
+    remote_src: yes
+
+- name: Install apache_exporter
+  copy:
+    src: /opt/apache_exporter-{{ ae_ver }}.linux-amd64/apache_exporter
+    dest: /usr/local/bin/apache_exporter
+    mode: '0755'
+    remote_src: yes
+
+- name: Create unprivileged apache_exporter user
+  user:
+      name: apache_exporter
+      create_home: no
+      password: "*"
+      shell: /usr/sbin/nologin
+      system: yes
+      state: present
+
+- name: Install apache_exporter systemd service
+  template:
+    src: apache_exporter.service.j2
+    dest: /etc/systemd/system/apache_exporter.service
+
+- name: Start apache_exporter
+  service:
+    name: apache_exporter
+    daemon_reload: yes
+    state: started
+    enabled: yes
+
+- name: Reload apache_exporter
+  systemd:
+    name: apache_exporter
+    state: reloaded
+    enabled: yes

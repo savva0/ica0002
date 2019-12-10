@@ -1,0 +1,29 @@
+acl networks {
+  {% for i in networks %}
+    {{ i }};
+  {% endfor %}
+};
+
+options {
+  directory "/var/cache/bind";
+
+  {% if forwarders is defined %}
+  forwarders {    
+    {% for i in forwarders%}
+      {{ i }};
+    {% endfor %}
+
+  };
+  {% endif %}
+  dnssec-validation auto;
+
+  allow-query { networks; };
+
+  auth-nxdomain no;
+
+  listen-on-v6 { any; };
+};
+
+statistics-channels {
+  inet 127.0.0.1 port 8053 allow { 127.0.0.1; };
+};
