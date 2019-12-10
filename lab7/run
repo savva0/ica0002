@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+ansible-playbook init.yaml --ask-become-pass > out
+
+ansible-playbook monitoring.yaml >> out

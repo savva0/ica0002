@@ -1,0 +1,406 @@
+
+PLAY [Init] ********************************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [infra02]
+ok: [ns2]
+ok: [infra01]
+ok: [grafana1]
+ok: [db1]
+ok: [ns1]
+ok: [prometheus1]
+ok: [web1]
+
+TASK [Run ping] ****************************************************************
+ok: [infra02]
+ok: [ns2]
+ok: [ns1]
+ok: [grafana1]
+ok: [prometheus1]
+ok: [infra01]
+ok: [db1]
+ok: [web1]
+
+TASK [Update sudoers] **********************************************************
+changed: [infra02]
+ok: [ns2]
+changed: [ns1]
+changed: [infra01]
+ok: [prometheus1]
+ok: [grafana1]
+ok: [db1]
+ok: [web1]
+
+TASK [Delete password and lock user] *******************************************
+changed: [infra02]
+ok: [ns2]
+changed: [ns1]
+changed: [infra01]
+changed: [prometheus1]
+changed: [grafana1]
+ok: [db1]
+ok: [web1]
+
+PLAY RECAP *********************************************************************
+db1                        : ok=4    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+grafana1                   : ok=4    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+infra01                    : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+infra02                    : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ns1                        : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ns2                        : ok=4    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+prometheus1                : ok=4    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+web1                       : ok=4    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+
+PLAY [Setup dns] ***************************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [ns1]
+ok: [ns2]
+
+TASK [dns : Wait for any possibly running unattended upgrade to finish] ********
+changed: [ns2]
+changed: [ns1]
+
+TASK [dns : Install BIND9 dns server] ******************************************
+changed: [ns2]
+changed: [ns1]
+
+TASK [dns : Apply named.conf.options] ******************************************
+changed: [ns2]
+changed: [ns1]
+
+TASK [dns : Apply named.conf.local] ********************************************
+changed: [ns1]
+changed: [ns2]
+
+TASK [dns : Write db.foo hash] *************************************************
+skipping: [ns2]
+changed: [ns1]
+
+TASK [dns : Write db.foo.ptr hash] *********************************************
+skipping: [ns2]
+changed: [ns1]
+
+TASK [dns : Install go] ********************************************************
+changed: [ns1]
+changed: [ns2]
+
+TASK [dns : Check if bind_exporter exists] *************************************
+ok: [ns1]
+ok: [ns2]
+
+TASK [dns : Fetch bind_exporter] ***********************************************
+changed: [ns1]
+changed: [ns2]
+
+TASK [dns : Install bind_exporter] *********************************************
+changed: [ns1]
+changed: [ns2]
+
+TASK [dns : Create unprivileged bind_exporter user] ****************************
+changed: [ns1]
+changed: [ns2]
+
+TASK [dns : Install bind_exporter systemd service] *****************************
+changed: [ns1]
+changed: [ns2]
+
+TASK [dns : Start and enable bind_exporter] ************************************
+changed: [ns1]
+changed: [ns2]
+
+TASK [dns : Reload bind_exporter] **********************************************
+changed: [ns1]
+changed: [ns2]
+
+RUNNING HANDLER [dns : Get timestamp] ******************************************
+changed: [ns1]
+
+RUNNING HANDLER [dns : Apply db.foo] *******************************************
+changed: [ns1]
+
+RUNNING HANDLER [dns : Apply db.foo.ptr] ***************************************
+changed: [ns1]
+
+RUNNING HANDLER [dns : Reload bind database] ***********************************
+changed: [ns1]
+
+RUNNING HANDLER [dns : Reload bind configuration] ******************************
+changed: [ns2]
+changed: [ns1]
+
+PLAY [Configure nodes] *********************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [infra01]
+ok: [infra02]
+
+TASK [node_exporter : Fetch node_exporter] *************************************
+changed: [infra01]
+changed: [infra02]
+
+TASK [node_exporter : Extract node_exporter] ***********************************
+changed: [infra01]
+changed: [infra02]
+
+TASK [node_exporter : Install node_exporter] ***********************************
+changed: [infra01]
+changed: [infra02]
+
+TASK [node_exporter : Create unprivileged node_exporter user] ******************
+changed: [infra01]
+changed: [infra02]
+
+TASK [node_exporter : Install node_exporter systemd service] *******************
+changed: [infra01]
+changed: [infra02]
+
+TASK [node_exporter : Start node_exporter] *************************************
+changed: [infra01]
+changed: [infra02]
+
+TASK [node_exporter : Reload node_exporter] ************************************
+changed: [infra01]
+changed: [infra02]
+
+TASK [ping_exporter : Install go] **********************************************
+ok: [infra01]
+ok: [infra02]
+
+TASK [ping_exporter : Copy ping_exporter source] *******************************
+changed: [infra01]
+changed: [infra02]
+
+TASK [ping_exporter : Get go dependencies] *************************************
+changed: [infra01]
+changed: [infra02]
+
+TASK [ping_exporter : Build ping_exporter] *************************************
+changed: [infra02]
+changed: [infra01]
+
+TASK [ping_exporter : Install ping_exporter] ***********************************
+changed: [infra01]
+changed: [infra02]
+
+TASK [ping_exporter : Let unprivileged users do ping] **************************
+changed: [infra01]
+changed: [infra02]
+
+TASK [ping_exporter : Create unprivileged ping_exporter user] ******************
+changed: [infra01]
+changed: [infra02]
+
+TASK [ping_exporter : Install ping_exporter systemd service] *******************
+changed: [infra01]
+changed: [infra02]
+
+TASK [ping_exporter : Start and enable ping_exporter] **************************
+changed: [infra01]
+changed: [infra02]
+
+TASK [ping_exporter : Reload ping_exporter] ************************************
+changed: [infra01]
+changed: [infra02]
+
+TASK [resolv : disable systemd-resolved] ***************************************
+changed: [infra02]
+changed: [infra01]
+
+TASK [resolv : resolv.conf] ****************************************************
+changed: [infra01]
+changed: [infra02]
+
+PLAY [Install prometheus] ******************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [prometheus1]
+
+TASK [prometheus : Fetch Prometheus] *******************************************
+changed: [prometheus1]
+
+TASK [prometheus : Extract Prometheus] *****************************************
+changed: [prometheus1]
+
+TASK [prometheus : Install Prometheus] *****************************************
+changed: [prometheus1]
+
+TASK [prometheus : Install Prometheus config] **********************************
+changed: [prometheus1]
+
+TASK [prometheus : Create unprivileged prometheus user] ************************
+changed: [prometheus1]
+
+TASK [prometheus : Create prometheus sotrage dir] ******************************
+changed: [prometheus1]
+
+TASK [prometheus : Install Prometheus systemd service] *************************
+changed: [prometheus1]
+
+TASK [prometheus : Start prometheus] *******************************************
+changed: [prometheus1]
+
+TASK [prometheus : Reload prometheus] ******************************************
+changed: [prometheus1]
+
+PLAY [Install Mariadb] *********************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [db1]
+
+TASK [mariadb : Wait for any possibly running unattended upgrade to finish] ****
+changed: [db1]
+
+TASK [mariadb : Install MariaDB] ***********************************************
+changed: [db1]
+
+TASK [mariadb : Install python3-pip package] ***********************************
+changed: [db1]
+
+TASK [mariadb : Make sure pymysql is present] **********************************
+changed: [db1]
+
+TASK [mariadb : Create a database for wordpress] *******************************
+changed: [db1]
+
+TASK [mariadb : Create a user for wordpress] ***********************************
+changed: [db1]
+
+TASK [mariadb : Create a user for mysqld_exporter] *****************************
+changed: [db1]
+
+TASK [mariadb : Limit mysqld_exporter to MAX_USER_CONNECTIONS 3] ***************
+changed: [db1]
+
+TASK [mariadb : Change MariaDB port] *******************************************
+changed: [db1]
+
+TASK [mariadb : Fetch mysqld_exporter] *****************************************
+changed: [db1]
+
+TASK [mariadb : Extract mysqld_exporter] ***************************************
+changed: [db1]
+
+TASK [mariadb : Install mysqld_exporter] ***************************************
+changed: [db1]
+
+TASK [mariadb : Create unprivileged mysqld_exporter user] **********************
+changed: [db1]
+
+TASK [mariadb : Install mysqld_exporter systemd service] ***********************
+changed: [db1]
+
+TASK [mariadb : Start mysqld_exporter] *****************************************
+changed: [db1]
+
+TASK [mariadb : Restart mysqld_exporter] ***************************************
+changed: [db1]
+
+RUNNING HANDLER [mariadb : Reload MariaDB configuration] ***********************
+changed: [db1]
+
+PLAY [Install wordpress] *******************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [web1]
+
+TASK [wordpress : Wait for any possibly running unattended upgrade to finish] ***
+changed: [web1]
+
+TASK [wordpress : Install Apache httpd] ****************************************
+changed: [web1]
+
+TASK [wordpress : Install php 7.2] *********************************************
+changed: [web1]
+
+TASK [wordpress : Install php mysql module] ************************************
+changed: [web1]
+
+TASK [wordpress : Install php fastcgi Apache module] ***************************
+changed: [web1]
+
+TASK [wordpress : Disable default php module in Apache2] ***********************
+changed: [web1]
+
+TASK [wordpress : Enable proxy_fcgi Apache2 module] ****************************
+changed: [web1]
+
+TASK [wordpress : Enable setenvif Apache2 module] ******************************
+changed: [web1]
+
+TASK [wordpress : Enable php7.2-fpm Apache2 config] ****************************
+changed: [web1]
+
+TASK [wordpress : Get latest version of WordPress] *****************************
+changed: [web1]
+
+TASK [wordpress : Get Authentication Unique Keys and Salts] ********************
+ok: [web1]
+
+TASK [wordpress : Install wp-config.php file] **********************************
+changed: [web1]
+
+TASK [wordpress : Add new site config] *****************************************
+changed: [web1]
+
+TASK [wordpress : Enable php site in Apache2] **********************************
+changed: [web1]
+
+TASK [wordpress : Disable default site config] *********************************
+changed: [web1]
+
+TASK [wordpress : Fetch apache_exporter] ***************************************
+changed: [web1]
+
+TASK [wordpress : Extract apache_exporter] *************************************
+changed: [web1]
+
+TASK [wordpress : Install apache_exporter] *************************************
+changed: [web1]
+
+TASK [wordpress : Create unprivileged apache_exporter user] ********************
+changed: [web1]
+
+TASK [wordpress : Install apache_exporter systemd service] *********************
+changed: [web1]
+
+TASK [wordpress : Start apache_exporter] ***************************************
+changed: [web1]
+
+TASK [wordpress : Reload apache_exporter] **************************************
+changed: [web1]
+
+RUNNING HANDLER [wordpress : restart apache2] **********************************
+changed: [web1]
+
+PLAY [Install Grafana] *********************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [grafana1]
+
+TASK [grafana : Install apt-transport-https] ***********************************
+changed: [grafana1]
+
+TASK [grafana : Add Grafana apt key] *******************************************
+changed: [grafana1]
+
+TASK [grafana : Add Grafana repository] ****************************************
+changed: [grafana1]
+
+TASK [grafana : Install Grafana] ***********************************************
+changed: [grafana1]
+
+TASK [grafana : Start and enable Grafana] **************************************
+changed: [grafana1]
+
+PLAY RECAP *********************************************************************
+db1                        : ok=18   changed=17   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+grafana1                   : ok=6    changed=5    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+infra01                    : ok=20   changed=18   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+infra02                    : ok=20   changed=18   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ns1                        : ok=20   changed=18   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ns2                        : ok=14   changed=12   unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+prometheus1                : ok=10   changed=9    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+web1                       : ok=24   changed=22   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
