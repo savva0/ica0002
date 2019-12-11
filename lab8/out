@@ -1,0 +1,207 @@
+
+PLAY [Init] ********************************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [infra02]
+ok: [infra01]
+
+TASK [Run ping] ****************************************************************
+ok: [infra02]
+ok: [infra01]
+
+TASK [Update sudoers] **********************************************************
+changed: [infra02]
+changed: [infra01]
+
+TASK [Delete password and lock user] *******************************************
+changed: [infra02]
+changed: [infra01]
+
+PLAY RECAP *********************************************************************
+infra01                    : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+infra02                    : ok=4    changed=2    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+
+PLAY [Setup dns] ***************************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [ns1]
+ok: [ns2]
+
+TASK [dns : Wait for any possibly running unattended upgrade to finish] ********
+changed: [ns1]
+changed: [ns2]
+
+TASK [dns : Install BIND9 dns server] ******************************************
+changed: [ns1]
+changed: [ns2]
+
+TASK [dns : Apply named.conf.options] ******************************************
+changed: [ns1]
+changed: [ns2]
+
+TASK [dns : Apply named.conf.local] ********************************************
+changed: [ns2]
+changed: [ns1]
+
+TASK [dns : Write db.foo hash] *************************************************
+skipping: [ns2]
+changed: [ns1]
+
+TASK [dns : Write db.foo.ptr hash] *********************************************
+skipping: [ns2]
+changed: [ns1]
+
+TASK [dns : Install go] ********************************************************
+changed: [ns2]
+changed: [ns1]
+
+TASK [dns : Check if bind_exporter exists] *************************************
+ok: [ns1]
+ok: [ns2]
+
+TASK [dns : Fetch bind_exporter] ***********************************************
+changed: [ns1]
+changed: [ns2]
+
+TASK [dns : Install bind_exporter] *********************************************
+changed: [ns1]
+changed: [ns2]
+
+TASK [dns : Create unprivileged bind_exporter user] ****************************
+changed: [ns2]
+changed: [ns1]
+
+TASK [dns : Install bind_exporter systemd service] *****************************
+changed: [ns1]
+changed: [ns2]
+
+TASK [dns : Start and enable bind_exporter] ************************************
+changed: [ns1]
+changed: [ns2]
+
+TASK [dns : Reload bind_exporter] **********************************************
+changed: [ns1]
+changed: [ns2]
+
+RUNNING HANDLER [dns : Get timestamp] ******************************************
+changed: [ns1]
+
+RUNNING HANDLER [dns : Apply db.foo] *******************************************
+changed: [ns1]
+
+RUNNING HANDLER [dns : Apply db.foo.ptr] ***************************************
+changed: [ns1]
+
+RUNNING HANDLER [dns : Reload bind database] ***********************************
+changed: [ns1]
+
+RUNNING HANDLER [dns : Reload bind configuration] ******************************
+changed: [ns1]
+changed: [ns2]
+
+PLAY [Configure nodes] *********************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [infra01]
+ok: [infra02]
+
+TASK [resolv : disable systemd-resolved] ***************************************
+changed: [infra01]
+changed: [infra02]
+
+TASK [resolv : resolv.conf] ****************************************************
+changed: [infra01]
+changed: [infra02]
+
+TASK [rsyslog : Apply rsyslog configuration] ***********************************
+changed: [infra01]
+changed: [infra02]
+
+RUNNING HANDLER [rsyslog : Restart rsyslog] ************************************
+changed: [infra01]
+changed: [infra02]
+
+PLAY [Install Grafana] *********************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [grafana1]
+
+TASK [grafana : Install apt-transport-https] ***********************************
+changed: [grafana1]
+
+TASK [grafana : Add Grafana apt key] *******************************************
+changed: [grafana1]
+
+TASK [grafana : Add Grafana repository] ****************************************
+changed: [grafana1]
+
+TASK [grafana : Install Grafana] ***********************************************
+changed: [grafana1]
+
+TASK [grafana : Start and enable Grafana] **************************************
+changed: [grafana1]
+
+PLAY [Install influxdb] ********************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [influxdb1]
+
+TASK [influxdb : Install dependencies] *****************************************
+changed: [influxdb1]
+
+TASK [influxdb : Add InfluxDB apt key] *****************************************
+changed: [influxdb1]
+
+TASK [influxdb : Add InfluxDB apt repository] **********************************
+changed: [influxdb1]
+
+TASK [influxdb : Install influxdb and telegraf] ********************************
+changed: [influxdb1]
+
+TASK [influxdb : Unmask, enable and stert influxdb] ****************************
+changed: [influxdb1]
+
+TASK [influxdb : Enable and stert telegraf] ************************************
+ok: [influxdb1]
+
+TASK [influxdb : pip] **********************************************************
+changed: [influxdb1]
+
+TASK [influxdb : Create database "rtt"] ****************************************
+changed: [influxdb1]
+
+TASK [influxdb : Apply telegraf config] ****************************************
+changed: [influxdb1]
+
+RUNNING HANDLER [influxdb : Restart telegraf] **********************************
+changed: [influxdb1]
+
+PLAY [Install ping_service] ****************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [infra02]
+
+TASK [ping_service : Install fping] ********************************************
+changed: [infra02]
+
+TASK [ping_service : Install ping_service] *************************************
+changed: [infra02]
+
+TASK [ping_service : Create unprivileged ping_service user] ********************
+changed: [infra02]
+
+TASK [ping_service : Install ping_service systemd service] *********************
+changed: [infra02]
+
+TASK [ping_service : Start ping_service] ***************************************
+changed: [infra02]
+
+PLAY RECAP *********************************************************************
+grafana1                   : ok=6    changed=5    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+influxdb1                  : ok=11   changed=9    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+infra01                    : ok=5    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+infra02                    : ok=11   changed=9    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ns1                        : ok=20   changed=18   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+ns2                        : ok=14   changed=12   unreachable=0    failed=0    skipped=2    rescued=0    ignored=0   
+

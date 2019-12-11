@@ -1,0 +1,95 @@
+- name: Wait for any possibly running unattended upgrade to finish
+  become: yes
+  raw: systemd-run --property="After=apt-daily.service apt-daily-upgrade.service" --wait /bin/true
+
+- name: Install BIND9 dns server
+  become: yes
+  apt:
+    name: bind9
+    update_cache: yes
+    state: latest
+
+- name: Apply named.conf.options
+  template:
+    src: templates/named.conf.options.j2
+    dest: /etc/bind/named.conf.options
+    validate: 'named-checkconf %s'
+  notify:
+    - Reload bind configuration
+
+- name: Apply named.conf.local
+  template:
+    src: templates/named.conf.local.j2
+    dest: /etc/bind/named.conf.local
+    validate: 'named-checkconf %s'
+  notify:
+    - Reload bind configuration
+
+- name: Write db.foo hash
+  copy:
+    content: '{{ foo_records | hash }}'
+    dest: /etc/bind/db.foo.hash
+  when: dns_role == "master"
+  notify:
+    - Get timestamp
+    - Apply db.foo
+    - Reload bind database
+
+- name: Write db.foo.ptr hash
+  copy:
+    content: '{{ foo_ptr_records | hash }}'
+    dest: /etc/bind/db.foo.ptr.hash
+  when: dns_role == "master"
+  notify:
+    - Get timestamp
+    - Apply db.foo.ptr
+    - Reload bind database
+
+- name: Install go
+  snap:
+    name: go
+    classic: yes
+    state: present
+
+- name: Check if bind_exporter exists
+  stat:
+    path: /root/go/src/github.com/digitalocean/bind_exporter/bind_exporter.go
+  register: bind_exporter_exists
+
+- name: Fetch bind_exporter
+  shell: "go get github.com/digitalocean/bind_exporter"
+  when: bind_exporter_exists.stat.exists == False
+
+- name: Install bind_exporter
+  copy:
+    src: /root/go/bin/bind_exporter
+    dest: /usr/local/bin/bind_exporter
+    mode: '0755'
+    remote_src: yes
+
+- name: Create unprivileged bind_exporter user
+  user:
+      name: bind_exporter
+      create_home: no
+      password: "*"
+      shell: /usr/sbin/nologin
+      system: yes
+      state: present
+
+- name: Install bind_exporter systemd service
+  template:
+    src: bind_exporter.service.j2
+    dest: /etc/systemd/system/bind_exporter.service
+
+- name: Start and enable bind_exporter
+  systemd:
+    name: bind_exporter
+    daemon_reload: yes
+    state: started
+    enabled: yes
+
+- name: Reload bind_exporter
+  systemd:
+    name: bind_exporter
+    state: reloaded
+    enabled: yes

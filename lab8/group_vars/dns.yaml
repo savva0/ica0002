@@ -1,0 +1,86 @@
+---
+forwarders:
+  - 8.8.8.8
+  - 8.8.4.4
+
+networks:
+  - 192.168.122.0/24
+  - localhost
+
+foo_records:
+  - name: infra01.foo.bar.
+    type: A
+    value: 192.168.122.138
+
+  - name: infra02.foo.bar.
+    type: A
+    value: 192.168.122.133
+
+  - name: ns.foo.bar.
+    type: A
+    value: 192.168.122.138
+
+  - name: ns.foo.bar.
+    type: A
+    value: 192.168.122.133
+
+  - name: ns.foo.bar.
+    type: A
+    value: 192.168.122.133
+
+  - name: web1.foo.bar.
+    type: A
+    value: 192.168.122.133
+
+  - name: ns2.foo.bar.
+    type: CNAME
+    value: infra02.foo.bar.
+
+  - name: ns1.foo.bar.
+    type: CNAME
+    value: infra01.foo.bar.
+
+  - name: foo.bar.
+    type: NS
+    value: infra01.foo.bar.
+
+  - name: foo.bar.
+    type: NS
+    value: infra02.foo.bar.
+
+  - name: www.foo.bar.
+    type: CNAME
+    value: web1.foo.bar.
+
+  - name: grafana1.foo.bar.
+    type: CNAME
+    value: infra01.foo.bar.
+
+  - name: prometheus1.foo.bar.
+    type: CNAME
+    value: infra01.foo.bar.
+
+  - name: influxdb1.foo.bar.
+    type: CNAME
+    value: infra01.foo.bar.
+
+  - name: db1.foo.bar.
+    type: CNAME
+    value: infra01.foo.bar.
+
+foo_ptr_records:
+  - name: 
+    type: NS
+    value: infra01.foo.bar.
+
+  - name: 
+    type: NS
+    value: infra02.foo.bar.
+
+  - name: 138
+    type: PTR
+    value: infra01.foo.bar.
+
+  - name: 133
+    type: PTR
+    value: infra02.foo.bar.

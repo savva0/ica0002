@@ -1,0 +1,17 @@
+[Unit]
+Description=Ping service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=ping_service
+Group=ping_service
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/bin/ping_service
+
+SyslogIdentifier=ping_service
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

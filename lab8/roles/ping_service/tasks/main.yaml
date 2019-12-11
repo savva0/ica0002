@@ -1,0 +1,33 @@
+- name: Install fping
+  apt:
+    name: fping
+    state: present
+    update_cache: yes
+  
+- name: Install ping_service
+  template:
+    src: ping_service.j2
+    dest: /usr/local/bin/ping_service
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Create unprivileged ping_service user
+  user:
+      name: ping_service
+      create_home: no
+      password: "*"
+      shell: /usr/sbin/nologin
+      system: yes
+      state: present
+
+- name: Install ping_service systemd service
+  template:
+    src: ping_service.service.j2
+    dest: /etc/systemd/system/ping_service.service
+
+- name: Start ping_service
+  systemd:
+    name: ping_service
+    enabled: yes
+    state: started

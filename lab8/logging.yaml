@@ -1,0 +1,36 @@
+---
+- name: Setup dns
+  hosts: dns
+  remote_user: savva
+  become: yes
+  roles:
+    - dns
+
+- name: Configure nodes
+  hosts: nodes
+  remote_user: savva
+  become: yes
+  roles:
+    - resolv
+    - rsyslog
+
+- name: Install Grafana
+  hosts: grafana1
+  remote_user: savva
+  become: yes
+  roles:
+    - grafana
+
+- name: Install influxdb
+  hosts: influxdb1
+  remote_user: savva
+  become: yes
+  roles:
+    - influxdb
+
+- name: Install ping_service
+  hosts: infra02
+  remote_user: savva
+  become: yes
+  roles:
+    - ping_service
