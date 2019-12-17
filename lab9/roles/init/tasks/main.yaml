@@ -1,0 +1,14 @@
+---
+- name: Update sudoers
+  become: yes
+  copy:
+    mode: '0440'
+    dest: /etc/sudoers.d/sudoers
+    content: '%sudo ALL=(ALL:ALL) NOPASSWD:ALL'
+    validate: 'visudo -cf %s'
+
+- name: Delete password and lock user
+  become: yes
+  user:
+    name: savva
+    password: '!'

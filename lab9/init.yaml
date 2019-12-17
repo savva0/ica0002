@@ -1,0 +1,44 @@
+---
+- name: Initialize infra
+  hosts: nodes
+  remote_user: savva
+  become: yes
+  roles:
+    - init
+
+- name: Setup dns
+  hosts: dns
+  remote_user: savva
+  become: yes
+  roles:
+    - dns
+
+- name: Configure nodes
+  hosts: nodes
+  remote_user: savva
+  become: yes
+  roles:
+    - node_exporter
+    - ping_exporter
+    - resolv
+
+- name: Install prometheus
+  hosts: prometheus1
+  remote_user: savva
+  become: yes
+  roles:
+    - prometheus
+
+- name: Install Mariadb
+  hosts: db1
+  remote_user: savva
+  become: yes
+  roles:
+    - mariadb
+
+- name: Install Docker
+  hosts: docker
+  remote_user: savva
+  become: yes
+  roles:
+    - docker

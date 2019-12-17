@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+ansible-playbook init.yaml --ask-pass --ask-become-pass > out
+
+ansible-playbook wordpress.yaml >> out
+
+ansible-playbook grafana.yaml >> out

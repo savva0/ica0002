@@ -1,0 +1,17 @@
+[Unit]
+Description=Ping exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=ping_exporter
+Group=ping_exporter
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart=/usr/local/bin/ping_exporter
+
+SyslogIdentifier=ping_exporter
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

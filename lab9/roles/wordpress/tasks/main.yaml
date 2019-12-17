@@ -1,0 +1,6 @@
+---
+- name: Wordpress
+  docker_container:
+    name: wordpress
+    image: wordpress
+    published_ports: 0.0.0.0:8080:80

@@ -1,0 +1,7 @@
+---
+- name: Install wordpress
+  hosts: web1
+  remote_user: savva
+  become: yes
+  roles:
+    - wordpress

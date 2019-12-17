@@ -1,0 +1,7 @@
+---
+- name: Install Grafana
+  hosts: grafana1
+  remote_user: savva
+  become: yes
+  roles:
+    - grafana
