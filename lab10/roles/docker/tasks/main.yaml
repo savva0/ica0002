@@ -1,0 +1,11 @@
+---
+- name: Install docker
+  apt:
+    package: ['docker.io', 'python3-pip']
+    update_cache: yes
+    state: latest
+
+- name: Install docker-py
+  pip:
+    name: 'docker-py'
+    state: latest

@@ -1,0 +1,22 @@
+---
+- name: Install Mariadb
+  hosts: db1
+  remote_user: savva
+  become: yes
+  roles:
+    - mariadb
+
+- name: Install wordpress
+  hosts: web1
+  remote_user: savva
+  become: yes
+  roles:
+    - wordpress
+    - haproxy
+
+- name: Install wordpress
+  hosts: web1
+  remote_user: savva
+  become: yes
+  roles:
+    - haproxy

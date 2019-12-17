@@ -1,0 +1,7 @@
+---
+wp_db_name: foo # DB name
+wp_db_user: bar # DB username
+wp_db_user_pass: "{{ vault_wp_db_user_pass }}" # DB password for user
+wp_db_host: db1.foo.bar # DB host
+wp_db_prefix: wp_ # DB table prefix, wp_ is the default
+instances: 9

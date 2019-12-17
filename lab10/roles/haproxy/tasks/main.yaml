@@ -1,0 +1,17 @@
+---
+- name: Wait for any possibly running unattended upgrade to finish
+  raw: systemd-run --property="After=apt-daily.service apt-daily-upgrade.service" --wait /bin/true
+
+- name: Install haproxy
+  apt:
+    name: haproxy
+    update_cache: yes
+    state: latest
+
+- name: Apply haproxy config
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    validate: haproxy -c -f %s
+  notify:
+    - Reload haproxy

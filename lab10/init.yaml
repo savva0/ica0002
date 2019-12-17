@@ -1,0 +1,28 @@
+---
+- name: Initialize infra
+  hosts: nodes
+  remote_user: savva
+  become: yes
+  roles:
+    - init
+
+- name: Setup dns
+  hosts: dns
+  remote_user: savva
+  become: yes
+  roles:
+    - dns
+
+- name: Configure nodes
+  hosts: nodes
+  remote_user: savva
+  become: yes
+  roles:
+    - resolv
+
+- name: Install Docker
+  hosts: docker
+  remote_user: savva
+  become: yes
+  roles:
+    - docker

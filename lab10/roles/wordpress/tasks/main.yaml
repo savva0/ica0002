@@ -1,0 +1,13 @@
+---
+- name: Wordpress
+  docker_container:
+    name: wordpress{{ item }}
+    image: wordpress
+    published_ports: '127.0.0.1:800{{ item }}:80'
+    env:
+      WORDPRESS_DB_HOST: '{{ wp_db_host }}'
+      WORDPRESS_DB_USER: '{{ wp_db_user }}'
+      WORDPRESS_DB_PASSWORD: '{{ wp_db_user_pass }}'
+      WORDPRESS_DB_NAME: '{{ wp_db_name }}'
+      WORDPRESS_TABLE_PREFIX: '{{ wp_db_prefix }}'
+  with_sequence: start=1 end={{ instances }}
