@@ -1,4 +1,7 @@
 ---
+- name: Kill wordpress with fire
+  shell: docker stop $(docker ps --filter "name=wordpress" -q) &> /dev/null && docker rm $(docker ps -a --filter name=wordpress -q) &> /dev/null
+
 - name: Wordpress
   docker_container:
     name: wordpress{{ item }}
