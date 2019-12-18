@@ -1,6 +1,4 @@
 ---
-- name: Kill wordpress with fire
-  shell: docker stop $(docker ps --filter "name=wordpress" -q) &> /dev/null && docker rm $(docker ps -a --filter name=wordpress -q) &> /dev/null
 
 - name: Wordpress
   docker_container:
@@ -16,3 +14,8 @@
       WORDPRESS_DB_NAME: '{{ wp_db_name }}'
       WORDPRESS_TABLE_PREFIX: '{{ wp_db_prefix }}'
   with_sequence: start=1 end={{ instances }}
+
+
+- name: Kill wordpress with fire
+  shell: docker stop wordpress{{ item }} &> /dev/null && docker rm wordpress{{ item }} &> /dev/null
+  with_sequence: start={{ instances + 1 }} end=10
