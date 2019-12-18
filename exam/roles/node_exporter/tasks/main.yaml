@@ -1,0 +1,21 @@
+# BECAUSE FUCKING UBUNTU DOESNT DO THAT WTF
+- name: Create unprivileged prometheus user for node-exporter
+  user:
+      name: prometheus
+      create_home: no
+      password: "*"
+      shell: /usr/sbin/nologin
+      system: yes
+      state: present
+
+- name: Install node-exporter
+  apt:
+    name: prometheus-node-exporter
+    update_cache: yes
+    state: latest
+
+- name: Make sure that node-exporter is running
+  systemd:
+    name: prometheus-node-exporter
+    state: started
+    enabled: yes

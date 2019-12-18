@@ -1,0 +1,72 @@
+- name: Wait for any possibly running unattended upgrade to finish
+  raw: systemd-run --property="After=apt-daily.service apt-daily-upgrade.service" --wait /bin/true
+
+- name: Install BIND9 dns server
+  apt:
+    name: bind9
+    update_cache: yes
+    state: latest
+
+- name: Apply named.conf.options
+  template:
+    src: templates/named.conf.options.j2
+    dest: /etc/bind/named.conf.options
+    validate: 'named-checkconf %s'
+  notify:
+    - Reload bind configuration
+
+- name: Apply named.conf.local
+  template:
+    src: templates/named.conf.local.j2
+    dest: /etc/bind/named.conf.local
+    validate: 'named-checkconf %s'
+  notify:
+    - Reload bind configuration
+
+- name: Write db.foo hash
+  copy:
+    content: '{{ foo_records | hash }}'
+    dest: /etc/bind/db.foo.hash
+  when: dns_role == "master"
+  notify:
+    - Get timestamp
+    - Apply db.foo
+    - Reload bind database
+
+- name: Write db.foo.ptr hash
+  copy:
+    content: '{{ foo_ptr_records | hash }}'
+    dest: /etc/bind/db.foo.ptr.hash
+  when: dns_role == "master"
+  notify:
+    - Get timestamp
+    - Apply db.foo.ptr
+    - Reload bind database
+
+# BECAUSE FUCKING UBUNTU DOESNT DO THAT WTF
+- name: Create unprivileged prometheus user for bind-exporter
+  user:
+      name: prometheus
+      create_home: no
+      password: "*"
+      shell: /usr/sbin/nologin
+      system: yes
+      state: present
+
+- name: Install bind-exporter
+  apt:
+    name: prometheus-bind-exporter
+    update_cache: yes
+    state: latest
+
+- name: Make sure that bind is running
+  systemd:
+    name: bind9
+    state: started
+    enabled: yes
+
+- name: Make sure that bind-exporter is running
+  systemd:
+    name: prometheus-bind-exporter
+    state: started
+    enabled: yes

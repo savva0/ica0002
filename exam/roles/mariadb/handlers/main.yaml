@@ -1,0 +1,4 @@
+- name: Reload MariaDB configuration
+  systemd:
+    name: mariadb
+    state: restarted

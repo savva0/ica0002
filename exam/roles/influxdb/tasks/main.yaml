@@ -1,0 +1,45 @@
+- name: Install dependencies
+  apt:
+    name: ['apt-transport-https', 'python3-pip']
+
+- name: Add InfluxDB apt key
+  apt_key:
+    id: 684A14CF2582E0C5
+    url: https://repos.influxdata.com/influxdb.key
+    keyring: /etc/apt/trusted.gpg.d/influxdb.gpg
+
+- name: Add InfluxDB apt repository
+  apt_repository:
+    repo: 'deb https://repos.influxdata.com/ubuntu bionic stable'
+    state: present
+    filename: influxdb
+
+- name: Install influxdb and telegraf
+  apt:
+    package: ['influxdb', 'telegraf',]
+    update_cache: yes
+    state: latest
+
+- name: Unmask, enable and start influxdb
+  service:
+    name: influxdb
+    masked: no
+    state: started
+    enabled: yes
+  
+- name: Enable and start telegraf
+  service:
+    name: telegraf
+    masked: no
+    state: started
+    enabled: yes
+
+- pip:
+    name: ['requests', 'influxdb']
+
+- name: Apply telegraf config
+  template:
+    src: telegraf.conf
+    dest: /etc/telegraf/telegraf.conf
+  notify:
+    - Restart telegraf

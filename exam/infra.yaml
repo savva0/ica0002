@@ -1,0 +1,59 @@
+---
+- name: Setup dns
+  hosts: dns
+  remote_user: savva
+  become: yes
+  roles:
+    - dns
+
+- name: Configure nodes
+  hosts: nodes
+  remote_user: savva
+  become: yes
+  roles:
+    - resolv
+    - node_exporter
+    - rsyslog
+
+- name: Install Docker
+  hosts: docker
+  remote_user: savva
+  become: yes
+  roles:
+    - docker
+
+- name: Install Mariadb
+  hosts: db
+  remote_user: savva
+  become: yes
+  roles:
+    - mariadb
+
+- name: Install influxdb
+  hosts: influxdb1
+  remote_user: savva
+  become: yes
+  roles:
+    - influxdb
+
+- name: Install Prometheus
+  hosts: prometheus1
+  remote_user: savva
+  become: yes
+  roles:
+    - prometheus
+
+- name: Install Grafana
+  hosts: grafana1
+  remote_user: savva
+  become: yes
+  roles:
+    - grafana
+
+- name: Install wordpress
+  hosts: web
+  remote_user: savva
+  become: yes
+  roles:
+    - wordpress
+    - haproxy

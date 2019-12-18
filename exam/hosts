@@ -1,0 +1,25 @@
+[nodes]
+infra01 ansible_host=192.168.122.138
+infra02 ansible_host=192.168.122.133
+    
+[dns]
+ns1 ansible_host=192.168.122.138
+ns2 ansible_host=192.168.122.133
+
+[docker]
+docker1 ansible_host=192.168.122.133
+
+[db]
+db1 ansible_host=192.168.122.138
+
+[influxdb]
+influxdb1 ansible_host=192.168.122.138
+
+[prometheus]
+prometheus1 ansible_host=192.168.122.138
+
+[web]
+web1 ansible_host=192.168.122.133
+
+[grafana]
+grafana1 ansible_host=192.168.122.133

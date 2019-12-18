@@ -1,0 +1,7 @@
+---
+- name: Initialize infra
+  hosts: nodes
+  remote_user: savva
+  become: yes
+  roles:
+    - init

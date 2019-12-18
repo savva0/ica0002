@@ -1,0 +1,89 @@
+---
+domain: foo.bar
+ptr: 168.192.in-addr.arpa.
+
+forwarders:
+  - 8.8.8.8
+  - 8.8.4.4
+
+networks:
+  - 192.168.122.0/24
+  - localhost
+
+foo_records:
+  - name: infra01.{{ domain }}.
+    type: A
+    value: 192.168.122.138
+
+  - name: infra02.{{ domain }}.
+    type: A
+    value: 192.168.122.133
+
+  - name: ns.{{ domain }}.
+    type: A
+    value: 192.168.122.138
+
+  - name: ns.{{ domain }}.
+    type: A
+    value: 192.168.122.133
+
+  - name: ns.{{ domain }}.
+    type: A
+    value: 192.168.122.133
+
+  - name: web1.{{ domain }}.
+    type: A
+    value: 192.168.122.133
+
+  - name: ns2.{{ domain }}.
+    type: CNAME
+    value: infra02.{{ domain }}.
+
+  - name: ns1.{{ domain }}.
+    type: CNAME
+    value: infra01.{{ domain }}.
+
+  - name: '{{ domain }}.'
+    type: NS
+    value: infra01.{{ domain }}.
+
+  - name: '{{ domain }}.'
+    type: NS
+    value: infra02.{{ domain }}.
+
+  - name: www.{{ domain }}.
+    type: CNAME
+    value: web1.{{ domain }}.
+
+  - name: grafana1.{{ domain }}.
+    type: CNAME
+    value: infra02.{{ domain }}.
+
+  - name: db1.{{ domain }}.
+    type: CNAME
+    value: infra01.{{ domain }}.
+
+  - name: prometheus1.{{ domain }}.
+    type: CNAME
+    value: infra01.{{ domain }}.
+    
+  - name: influxdb1.{{ domain }}.
+    type: CNAME
+    value: infra01.{{ domain }}.
+
+foo_ptr_records:
+  - name: 
+    type: NS
+    value: infra01.{{ domain }}.
+
+  - name: 
+    type: NS
+    value: infra02.{{ domain }}.
+
+  - name: 138
+    type: PTR
+    value: infra01.{{ domain }}.
+
+  - name: 133
+    type: PTR
+    value: infra02.{{ domain }}.

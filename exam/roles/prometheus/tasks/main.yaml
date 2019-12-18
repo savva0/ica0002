@@ -1,0 +1,27 @@
+# BECAUSE FUCKING UBUNTU DOESNT DO THAT WTF
+- name: Create unprivileged prometheus user for bind-exporter
+  user:
+      name: prometheus
+      create_home: no
+      password: "*"
+      shell: /usr/sbin/nologin
+      system: yes
+      state: present
+
+- name: Install Prometheus
+  apt:
+    name: prometheus
+    update_cache: yes
+    state: latest
+
+- name: Install Prometheus config
+  template:
+    src: prometheus.yaml.j2
+    dest: /etc/prometheus/prometheus.yml
+  notify: Reload prometheus
+
+- name: Start prometheus
+  service:
+    name: prometheus
+    state: started
+    enabled: yes

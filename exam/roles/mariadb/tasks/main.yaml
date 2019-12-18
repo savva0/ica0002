@@ -1,0 +1,89 @@
+---
+- name: Wait for any possibly running unattended upgrade to finish
+  raw: systemd-run --property="After=apt-daily.service apt-daily-upgrade.service" --wait /bin/true
+
+- name: Install MariaDB
+  apt:
+    name: mariadb-server-10.1
+    update_cache: yes
+    state: latest
+
+- name: Install python3-pip package
+  apt:
+    name: python3-pip
+    update_cache: yes
+    state: latest
+
+- name: Make sure pymysql is present
+  pip:
+    name: pymysql
+    state: present
+
+- name: Create a database for wordpress
+  mysql_db:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: '{{ wp_db_name }}'
+    state: present
+
+- name: Create a user for wordpress
+  mysql_user:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: '{{ wp_db_user }}'
+    host: '{{ wp_user_host }}'
+    priv: '{{ wp_db_name }}.*:ALL,GRANT'
+    state: present
+    password: '{{ wp_db_user_pass }}'
+  notify:
+    - Reload MariaDB configuration
+
+- name: Create a user prometheus for mysqld_exporter
+  mysql_user:
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    name: prometheus
+    host: 'localhost'
+    priv: '*.*:PROCESS,REPLICATION CLIENT'
+    state: present
+  register: mysqld_exporter_created
+  notify:
+  - Reload MariaDB configuration
+
+- name: Limit mysqld_exporter to MAX_USER_CONNECTIONS 3
+  shell: mysql -e "update mysql.user set MAX_USER_CONNECTIONS=3 where user='prometheus' and host='localhost'";
+  when: mysqld_exporter_created.changed
+
+- name: Change MariaDB port
+  lineinfile:
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    state: present
+    regexp: '^bind-address'
+    line: 'bind-address = 0.0.0.0'
+  notify:
+    - Reload MariaDB configuration
+
+# BECAUSE FUCKING UBUNTU DOESNT DO THAT WTF
+- name: Create unprivileged prometheus user for mysqld-exporter
+  user:
+      name: prometheus
+      create_home: no
+      password: "*"
+      shell: /usr/sbin/nologin
+      system: yes
+      state: present
+
+- name: Change mysqld-exporter config
+  template:
+    src: prometheus-mysqld-exporter.j2
+    dest: /etc/default/prometheus-mysqld-exporter
+
+- name: Install mysqld-exporter
+  apt:
+    name: prometheus-mysqld-exporter
+    update_cache: yes
+    state: latest
+
+- name: Restart mysqld-exporter
+  systemd:
+    name: prometheus-mysqld-exporter
+    state: started
+    enabled: yes
+  ignore_errors: yes

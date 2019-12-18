@@ -1,0 +1,11 @@
+$TTL 604800
+@ IN SOA foo.bar. hostmaster.foo.bar. (
+{{ ts.stdout }}  ; Serial
+    604800  ; Refresh
+     86400  ; Retry
+   2419200  ; Expire
+    604800) ; Negative Cache TTL
+;
+{% for i in foo_ptr_records %}
+{{ i.name }} IN {{ i.type }} {{ i.value }}
+{% endfor %}

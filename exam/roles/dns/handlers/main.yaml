@@ -1,0 +1,23 @@
+- name: Get timestamp
+  shell: date +%s
+  register: ts
+
+- name: Apply db.foo
+  template:
+    src: templates/db.foo.j2
+    dest: /etc/bind/db.foo
+    validate: named-checkzone {{ domain }} %s
+
+- name: Apply db.foo.ptr
+  template:
+    src: templates/db.foo.ptr.j2
+    dest: /etc/bind/db.foo.ptr
+    validate: named-checkzone {{ ptr }} %s
+
+- name: Reload bind database
+  shell: rndc reload
+
+- name: Reload bind configuration
+  systemd:
+    name: bind9
+    state: reloaded
